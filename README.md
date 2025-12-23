@@ -41,7 +41,7 @@ print(f"Estimated Heart Rate: {results['hr']} BPM")
 To analyze a pre-recorded video file, use the `process_video` method. This method handles frame extraction, face detection, and signal inference automatically.
 
 ```python
-results = model.process_video("subject_test.mp4")
+results = model.process_video("subject_test.mkv")
 ```
 
 **Output Structure:**
