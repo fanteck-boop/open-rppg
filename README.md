@@ -137,9 +137,14 @@ For integration into existing pipelines where frames are already loaded as memor
 import numpy as np
 
 # tensor shape: (T, H, W, 3)
-video_tensor = np.zeros((150, 128, 128, 3), dtype='uint8') 
+video_tensor = np.zeros((300, 480, 640, 3), dtype='uint8') # 480p video
 
 result = model.process_video_tensor(video_tensor, fps=30.0)
+
+faces_tensor = np.zeros((300, 128, 128, 3), dtype='uint8') # face array
+
+result = model.process_faces_tensor(faces_tensor, fps=30.0)
+
 ```
 
 ### Model Selection
