@@ -1778,3 +1778,25 @@ def load_EfficientPhys_pure():
         return {'bvp':y}, state
     call(np.zeros((160,72,72,3), dtype='uint8'), state)
     return call, state, {'fps':30., 'input':(160, 72, 72, 3), 'cumsum_output':True}
+    
+from .models_code.FacePhys import FacePhys
+    
+def load_FacePhys(weight):
+    model = FacePhys([2]*4, [32]*4)
+    model.build((1, 1, 36, 36, 3))
+    model.load_weights(weight)
+    state = model.init_state((1, 1, 36, 36, 3))
+    return model, state
+
+@lru_cache(maxsize=1)
+def load_FacePhys_rlap():
+    weights_path = pkg_resources.resource_filename(
+        'rppg','weights/FacePhys.rlap.weights.h5')
+    model, state = load_FacePhys(weights_path)
+    @jax.jit
+    def call(x, state, dt=1/30):
+        y, state = model.step(x[None]/255., state, dt=dt)
+        return {'bvp':y[0]}, state
+    _, s = call(np.zeros((1,36,36,3), dtype='uint8'), state)
+    _, s = call(np.zeros((1,36,36,3), dtype='uint8'), s)
+    return call, state, {'fps':30., 'input':(1, 36, 36, 3)}

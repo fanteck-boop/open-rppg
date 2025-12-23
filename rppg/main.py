@@ -44,22 +44,32 @@ def validate_param(**kw):
         return wrapper
     return decorator
 
-def SQI(signal, sr=30, min_freq=0.5, max_freq=3.0):
-    n = len(signal)
-    if n < 2:
-        return 0.0
-    signal = signal - np.mean(signal)
-    signal = signal / (np.std(signal) + 1e-8)
-    autocorr = np.correlate(signal, signal, mode='full')
-    autocorr = autocorr[n-1:]
-    autocorr = autocorr / autocorr[0]
-    min_lag = max(1, int(sr / max_freq))
-    max_lag = min(len(autocorr)-1, int(sr / min_freq))
-    if min_lag >= max_lag or max_lag <= min_lag:
-        return 0.0
-    target_autocorr = autocorr[min_lag:max_lag+1]
-    peak_value = np.max(target_autocorr)
-    return max(0.0, min(1.0, peak_value))
+def SQI(signal, sr=30, min_freq=0.5, max_freq=3.0, window_size=10):
+    def _SQI(signal, sr=sr, min_freq=min_freq, max_freq=max_freq):
+        n = len(signal)
+        if n < 2:
+            return 0.0
+        signal = signal - np.mean(signal)
+        signal = signal / (np.std(signal) + 1e-8)
+        autocorr = np.correlate(signal, signal, mode='full')
+        autocorr = autocorr[n-1:]
+        autocorr = autocorr / autocorr[0]
+        min_lag = max(1, int(sr / max_freq))
+        max_lag = min(len(autocorr)-1, int(sr / min_freq))
+        if min_lag >= max_lag or max_lag <= min_lag:
+            return 0.0
+        target_autocorr = autocorr[min_lag:max_lag+1]
+        peak_value = np.max(target_autocorr)
+        return max(0.0, min(1.0, peak_value))
+    window_len = round(window_size * sr)
+    steps = int(len(signal)/window_len)+1
+    stride = int((len(signal)-window_len)/(steps-1)) if steps>1 else 0
+    sqis = []
+    for i in range(steps):
+        i *= stride
+        sqi = _SQI(signal[i:i+window_len], sr, min_freq, max_freq)
+        sqis.append(sqi)
+    return np.mean(sqis) if sqis else 0.0
 
 def get_hr(y, sr=30, min=30, max=180):
     p, q = welch(y, sr, nfft=2e4, nperseg=np.min((len(y)-1, 256/30*sr)))
@@ -382,15 +392,17 @@ class FaceDetector:
         
         return results
 
-supported_models = ['ME-chunk.rlap', 'ME-flow.rlap', 'ME-chunk.pure', 'ME-flow.pure',
-                           'PhysMamba.pure', 'PhysMamba.rlap', 'RhythmMamba.rlap', 'RhythmMamba.pure',
-                           'PhysFormer.pure', 'PhysFormer.rlap', 'TSCAN.rlap', 'TSCAN.pure',
-                           'PhysNet.rlap', 'PhysNet.pure', 'EfficientPhys.pure', 'EfficientPhys.rlap']
+supported_models = ['FacePhys.rlap', 'ME-chunk.rlap', 'ME-flow.rlap', 'ME-chunk.pure', 'ME-flow.pure',
+                    'PhysMamba.pure', 'PhysMamba.rlap', 'RhythmMamba.rlap', 'RhythmMamba.pure',
+                    'PhysFormer.pure', 'PhysFormer.rlap', 'TSCAN.rlap', 'TSCAN.pure',
+                    'PhysNet.rlap', 'PhysNet.pure', 'EfficientPhys.pure', 'EfficientPhys.rlap']
 
 class Model:
     
     @validate_param(model=supported_models)
-    def __init__(self, model='ME-chunk.rlap'):
+    def __init__(self, model='FacePhys.rlap'):
+        if model == 'FacePhys.rlap':
+            f, state, meta = load_FacePhys_rlap()
         if model == 'ME-chunk.rlap':
             f, state, meta = load_ME_chunk_rlap()
         if model == 'ME-chunk.pure':
@@ -594,7 +606,7 @@ class Model:
         if self.has_signal:
             bvp, ts = self.bvp(start, end)
             try:
-                sqi = SQI(bvp)
+                sqi = SQI(self.bvp(start, end, raw=True)[0], sr=self.fps)
                 hrv = {}
                 if return_hrv and sqi>0.5:
                     hrv = get_prv(bvp, ts, self.fps)

@@ -1,112 +1,172 @@
-# 🫀 open-rppg
-An easy-to-use rPPG inference toolbox
+# Open-rppg
 
-## ⚙️ Installation 
-Python >= 3.9 & <= 3.12
+Open-rppg is a comprehensive Python toolbox designed for Remote Photoplethysmography (rPPG) inference. It provides a unified interface for state-of-the-art deep learning models, enabling physiological signal measurement (such as heart rate and heart rate variability) from facial videos. The toolkit supports both offline video processing and low-latency real-time inference using JAX and Keras.
+
+## Installation
+
+This package requires Python 3.9 through 3.13.
+
+To install the standard version:
+
 ```bash
 pip install open-rppg
 ```
-## 🧪 Import and Use 
-```python
-import rppg
-model  = rppg.Model()
-result = model.process_video("your_video.mp4")
-```
 
-## 📊 Result Example 
-```python
-{'hr': 100.45004500450045,        # Heart Rate (FFT Method)
- 'SQI': 0.8665749931341046,       # Signal Quality
- 'hrv':{
-    'bpm': 103.6194862200475,     # Heart Rate (Peak Method)
-    'ibi': 579.0416666666666,     # Inter-Beat Interval
-    'sdnn': 54.76628055757589,    # Standard Deviation of NN intervals
-    'sdsd': 30.674133962201175,   # Standard Deviation of Successive Differences
-    'rmssd': 46.25344260031846,   # Root Mean Square of Successive Differences
-    'pnn20': 0.5714285714285714,  # Proportion of NN50 > 20ms
-    'pnn50': 0.2857142857142857,  # Proportion of NN50 > 50ms
-    'hr_mad': 8.333333333333314,  # Heart Rate Median Absolute Deviation
-    'sd1': 29.276576197229755,    # Short-term variability
-    'sd2': 59.75143144804733,     # Long-term variability
-    's': 5495.642490576809,       # Poincaré Plot Area
-    'sd1/sd2': 0.489972800445545, # SD1/SD2 Ratio
-    'breathingrate': 0.21607605877268798,
-    'VLF': 0.09521664913596516,   # Very Low Frequency Power
-    'TP': 2.056694418632364,      # Total Power
-    'HF': 1.2267116642737315,     # High Frequency Power
-    'LF': 0.7347661052226675,     # Low Frequency Power
-    'LF/HF': 0.5989721355243509   # LF/HF Ratio
-  },
- 'latency': 0.0}                  # Real-Time Latency
-```
+To enable GPU acceleration (Linux/CUDA), install the CUDA-supported version of JAX:
 
-## 🕒 Real-Time Mode 
-```python
-import time
-model = rppg.Model()
-
-with model.video_capture(0):          # Connect to your webcam
-    while True:
-        result = model.hr(start=-15)  # Get heart rate from last 15 seconds
-        if result:
-            print(f"Heart Rate: {result['hr']} BPM")
-        time.sleep(1)
-```
-
-## 🖼️ Real-Time Frame Preview
-
-```python
-for frame, box in model.preview:     # Current RGB frame and detection box
-    x, y  = box                      
-    face  = frame[x[0]:x[1], y[0]:y[1]]
-```
-
-## 💓 Get BVP Wave 
-```python
-bvp, ts        = model.bvp()         # BVP with timestampes
-raw_bvp, ts    = model.bvp(raw=True) # Unfiltered BVP
-```
-
-## ⌛ Time Slice 
-```python
-now       = model.now                      # Video duration or current time
-bvp, ts   = model.bvp(start=10, end=20)    # BVP slice from 10 to 20 seconds
-bvp, ts   = model.bvp(start=-15)           # The last 15-second slice
-hr        = model.hr(start=-15)            # HR of the last 15 seconds 
-```
-
-## 🧠 Model Selection 
-```python
-print(rppg.supported_models) # ['ME-chunk.rlap', 'ME-flow.rlap', .......]
-model = rppg.Model('RhythmMamba.rlap') # RhythmMamba trained on rlap
-```
-## 🧰 Pretrained Models 
-| Model | Training Set | Description | Paper |
-|-|-|-|-| 
-|ME-chunk|PURE RLAP|rPPG based on state-space model|[2025](https://doi.org/10.48550/arXiv.2504.01774)|
-|ME-flow|PURE RLAP|ME in low-latency real-time mode|[2025](https://doi.org/10.48550/arXiv.2504.01774)| 
-|PhysMamba|PURE RLAP|Mamba with fast-slow network|[2024](https://doi.org/10.48550/arXiv.2409.12031)|
-|RhythmMamba|PURE RLAP|Mamba with 1D FFT|[2025](https://doi.org/10.1609/aaai.v39i10.33204)|
-|PhysFormer|PURE RLAP|Transformer with central diff conv|[2022](https://openaccess.thecvf.com/content/CVPR2022/papers/Yu_PhysFormer_Facial_Video-Based_Physiological_Measurement_With_Temporal_Difference_Transformer_CVPR_2022_paper.pdf)| 
-|TSCAN|PURE RLAP|Conv attention with temporal shift|[2020](https://papers.nips.cc/paper/2020/file/e1228be46de6a0234ac22ded31417bc7-Paper.pdf)|
-|EfficientPhys|PURE RLAP|TSCAN with self attention|[2022](https://openaccess.thecvf.com/content/WACV2023/papers/Liu_EfficientPhys_Enabling_Simple_Fast_and_Accurate_Camera-Based_Cardiac_Measurement_WACV_2023_paper.pdf)|
-|PhysNet|PURE RLAP|3D CNN encoder-decoder network|[2019](https://bmvc2019.org/wp-content/uploads/papers/0186-paper.pdf)| 
-
-## ⚡ Use CUDA 
-Install JAX with CUDA (Linux only).
 ```bash
 pip install jax[cuda]
 ```
 
-## 📜 Licensing Notice
+## Quick Start
 
-This repository includes source code and tools released under the [MIT License](LICENSE).
+The core interface is managed through the `Model` class. By default, it initializes a robust, general-purpose model (`FacePhys.rlap`).
 
-However, **pretrained models and model configurations** provided in this repository are the intellectual property of their respective authors and are licensed under the terms specified by the **original papers**. Please refer to the respective publications and their repositories for license details before using these models in your work.
+```python
+import rppg
 
-We do **not** claim ownership or rights to redistribute third-party models unless explicitly stated.
+# Initialize the model
+model = rppg.Model()
 
-## 📚 Citation
+# Process a video file
+results = model.process_video("path/to/video.mkv")
+
+# Display the heart rate
+print(f"Estimated Heart Rate: {results['hr']} BPM")
+```
+
+## Usage Guide
+
+### 1. Offline Video Processing
+To analyze a pre-recorded video file, use the `process_video` method. This method handles frame extraction, face detection, and signal inference automatically.
+
+```python
+results = model.process_video("subject_test.mp4")
+```
+
+**Output Structure:**
+The returned dictionary contains the following keys:
+
+* **hr**: Heart Rate estimated via the frequency domain (FFT).
+* **SQI**: Signal Quality Index (0.0 to 1.0), indicating the reliability of the measurement.
+* **latency**: Inference latency (primarily relevant for real-time streams).
+* **hrv**: A dictionary of Heart Rate Variability metrics calculated in the time domain:
+    * *bpm*: Heart rate derived from peak detection.
+    * *ibi*: Inter-Beat Interval (milliseconds).
+    * *sdnn*: Standard deviation of NN intervals.
+    * *rmssd*: Root mean square of successive differences.
+    * *pnn50*: Proportion of NN50 > 50ms.
+    * *LF/HF*: Ratio of Low Frequency to High Frequency power.
+    * *breathingrate*: Estimated respiration rate.
+
+### 2. Real-Time Inference
+Open-rppg includes a threaded pipeline optimized for real-time webcam inference. Use the `video_capture` context manager to handle the video stream safely.
+
+```python
+import rppg
+import time
+import cv2
+
+model = rppg.Model()
+
+# Open the default camera (index 0)
+with model.video_capture(0):
+    while True:
+        # Calculate statistics based on the last 10 seconds of data
+        # 'start=-10' indicates a window starting 10 seconds ago relative to 'now'
+        result = model.hr(start=-10)
+        
+        if result:
+            print(f"Real-time HR: {result['hr']} BPM")
+            
+        # Access the current frame and detection box for visualization
+        # The 'preview' generator yields the latest available frame
+        for frame, box in model.preview:
+            if box is not None:
+                # box format: [[row_min, row_max], [col_min, col_max]]
+                y1, y2 = box[0]
+                x1, x2 = box[1]
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            
+            cv2.imshow("rPPG Monitor", frame)
+            
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+```
+
+## Advanced API
+
+### Retrieving Raw Signals
+You can extract the underlying Blood Volume Pulse (BVP) waveform for further analysis or plotting.
+
+```python
+# Retrieve the full BVP signal and corresponding timestamps
+bvp, timestamps = model.bvp()
+
+# Retrieve the raw, unfiltered BVP signal
+raw_bvp, timestamps = model.bvp(raw=True)
+```
+
+### Time Slicing
+The toolbox allows specific time windows to be analyzed within the buffer.
+
+```python
+# Get signal from t=10s to t=20s
+bvp_slice, ts_slice = model.bvp(start=10, end=20)
+
+# Get metrics for the last 15 seconds
+metrics = model.hr(start=-15)
+```
+
+### Tensor Inputs
+For integration into existing pipelines where frames are already loaded as memory arrays, use the tensor processing methods.
+
+* **Input Format:** `uint8` array with shape `(Frames, Height, Width, 3)`.
+
+```python
+import numpy as np
+
+# tensor shape: (T, H, W, 3)
+video_tensor = np.zeros((150, 128, 128, 3), dtype='uint8') 
+
+result = model.process_video_tensor(video_tensor, fps=30.0)
+```
+
+### Model Selection
+You can specify different architectures during initialization. The models are categorized by architecture and training configuration (`rlap` or `pure`).
+
+```python
+# Example: Initialize the PhysMamba model
+model = rppg.Model('PhysMamba.pure')
+```
+
+## Model Zoo
+
+The following architectures are supported. 
+
+| Model Name | Description | Reference |
+| :--- | :--- | :--- |
+| **ME-chunk** | State-space model rPPG (chunk inference) | arXiv 2025 |
+| **ME-flow** | State-space model rPPG (low-latency flow) | arXiv 2025 |
+| **PhysMamba** | Dual-branch Mamba architecture | CCBR 2024 |
+| **RhythmMamba**| Frequency-domain constrained Mamba | AAAI 2025 |
+| **PhysFormer** | Temporal Difference Transformer | CVPR 2022 |
+| **TSCAN** | Temporal Shift Convolutional Attention Network | NeurIPS 2020 |
+| **EfficientPhys**| Self-attention variant of TSCAN | WACV 2023 |
+| **PhysNet** | 3D Convolutional Encoder-Decoder | BMVC 2019 |
+| **FacePhys** | Optimized state-space model | - |
+
+*Note: Suffixes `.rlap` and `.pure` indicate different training protocols/weights.*
+
+## Licensing
+
+The source code and tools in this repository are released under the **MIT License**.
+
+**Important:** Pretrained models and model configurations provided in this repository are derived from academic research. They are the intellectual property of their respective authors and are subject to the license terms specified in their original publications. Please refer to the citations below for details.
+
+## Citation
+
+If you use this toolkit or the included models in your research, please cite the relevant papers:
 
 ```bibtex
 @article{yu2019remote,
