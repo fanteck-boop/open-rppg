@@ -1,6 +1,7 @@
 # Open-rppg
 
-Open-rppg is a comprehensive Python toolbox designed for Remote Photoplethysmography (rPPG) inference. It provides a unified interface for state-of-the-art deep learning models, enabling physiological signal measurement (such as heart rate and heart rate variability) from facial videos. The toolkit supports both offline video processing and low-latency real-time inference using JAX and Keras.
+Open-rppg is a comprehensive Python toolbox designed for Remote Photoplethysmography (rPPG) inference. It provides a unified interface for state-of-the-art deep learning models, enabling physiological signal measurement (such as heart rate and heart rate variability) from facial videos. The toolkit supports both offline video processing and low-latency real-time inference using JAX.
+<img width="948" height="250" alt="image" src="https://github.com/user-attachments/assets/5c945368-67bf-4ccb-8822-fa359a787cdd" />
 
 ## Installation
 
