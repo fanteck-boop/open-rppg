@@ -18,18 +18,18 @@ with model.video_capture(0):
 
         now = time.time()
         if now - last_send > 1.0:
-            result = model.hr(start=-10)  # last 10 seconds
+            result = model.hr(start=-10)
             if result and result.get('hr'):
                 payload = {
-                    "hr":  round(result['hr'], 1),
-                    "sqi": round(result.get('SQI', 0), 3),
-                    "hrv": result.get('hrv')  # rmssd, sdnn, pnn50, LF/HF, breathingrate
+                    "hr": round(float(result['hr']), 1),
+                    "sqi": round(float(result.get('SQI', 0)), 3),
+                    "hrv": {k: float(v) if isinstance(v, float) else v
+                            for k, v in result.get('hrv', {}).items()}
                 }
                 sock.sendto(json.dumps(payload).encode(), (UDP_IP, UDP_PORT))
                 print(payload)
             last_send = now
 
-        # Draw face box + HR on preview window
         if box is not None:
             y1, y2 = box[0]
             x1, x2 = box[1]
