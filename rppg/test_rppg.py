@@ -20,11 +20,17 @@ with model.video_capture(0):
         if now - last_send > 1.0:
             result = model.hr(start=-10)
             if result and result.get('hr'):
+                hrv = result.get('hrv', {})
                 payload = {
-                    "hr": round(float(result['hr']), 1),
+                    "hr":  round(float(result['hr']), 1),
                     "sqi": round(float(result.get('SQI', 0)), 3),
-                    "hrv": {k: float(v) if isinstance(v, float) else v
-                            for k, v in result.get('hrv', {}).items()}
+                    "hrv": {
+                        "rmssd":         float(hrv.get('rmssd', 0)),
+                        "sdnn":          float(hrv.get('sdnn', 0)),
+                        "ibi":           float(hrv.get('ibi', 0)),
+                        "lf_hf":         float(hrv.get('LF/HF', 0)),
+                        "breathingrate": float(hrv.get('breathingrate', 0))
+                    }
                 }
                 sock.sendto(json.dumps(payload).encode(), (UDP_IP, UDP_PORT))
                 print(payload)
