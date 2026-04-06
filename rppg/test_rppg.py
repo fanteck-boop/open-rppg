@@ -18,7 +18,7 @@ with model.video_capture(0):
 
         now = time.time()
         if now - last_send > 1.0:
-            result = model.hr(start=-30)
+            result = model.hr(start=-10)
             if result and result.get('hr'):
                 sqi = float(result.get('SQI', 0))
                 if sqi > 0.3:
