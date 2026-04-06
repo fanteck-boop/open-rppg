@@ -18,22 +18,24 @@ with model.video_capture(0):
 
         now = time.time()
         if now - last_send > 1.0:
-            result = model.hr(start=-10)
+            result = model.hr(start=-30)
             if result and result.get('hr'):
-                hrv = result.get('hrv', {})
-                payload = {
-                    "hr":  round(float(result['hr']), 1),
-                    "sqi": round(float(result.get('SQI', 0)), 3),
-                    "hrv": {
-                        "rmssd":         float(hrv.get('rmssd', 0)),
-                        "sdnn":          float(hrv.get('sdnn', 0)),
-                        "ibi":           float(hrv.get('ibi', 0)),
-                        "lf_hf":         float(hrv.get('LF/HF', 0)),
-                        "breathingrate": float(hrv.get('breathingrate', 0))
+                sqi = float(result.get('SQI', 0))
+                if sqi > 0.3:
+                    hrv = result.get('hrv', {})
+                    payload = {
+                        "hr":  round(float(result['hr']), 1),
+                        "sqi": round(sqi, 3),
+                        "hrv": {
+                            "rmssd":         float(hrv.get('rmssd', 0)),
+                            "sdnn":          float(hrv.get('sdnn', 0)),
+                            "ibi":           float(hrv.get('ibi', 0)),
+                            "lf_hf":         float(hrv.get('LF/HF', 0)),
+                            "breathingrate": float(hrv.get('breathingrate', 0))
+                        }
                     }
-                }
-                sock.sendto(json.dumps(payload).encode(), (UDP_IP, UDP_PORT))
-                print(payload)
+                    sock.sendto(json.dumps(payload).encode(), (UDP_IP, UDP_PORT))
+                    print(payload)
             last_send = now
 
         if box is not None:
