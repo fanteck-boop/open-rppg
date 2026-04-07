@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "open-rppg"
+version = "0.1.0"
+requires-python = ">=3.9,<=3.13"
+dependencies = [
+    "heartpy>=1.2",
+    "jax>=0.4.26",
+    "keras>=3.5.0",
+    "onnxruntime>=1.13",
+    "opencv-python>=4.5.5.64",
+    "scipy>=1.8",
+    "einops>=0.8",
+    "av>=13",
+    "setuptools",
+]
+
+[project.optional-dependencies]
+metal = ["jax-metal"]

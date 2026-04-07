@@ -391,7 +391,7 @@ class InfinitePulse(keras.Model):
         return x[...,0], new_state
 
 from functools import lru_cache
-import importlib.metadata as pkg_resources
+import pkg_resources
 
 def load_ME(weight):
     model = InfinitePulse([2]*4)

@@ -716,10 +716,13 @@ class Model:
     def video_capture(self, vid_path=0):
         if self.run is not None:
             raise RuntimeError('A task is currently running!')
-        import sys 
-        api = 0
+        import sys
         if sys.platform.startswith('win32'):
-            api = 700
+            api = cv2.CAP_DSHOW          # DirectShow (Windows)
+        elif sys.platform == 'darwin':
+            api = cv2.CAP_AVFOUNDATION   # AVFoundation (macOS)
+        else:
+            api = cv2.CAP_ANY            # Auto-detect (Linux, etc.)
         self.run = threading.Thread(target=lambda:self.__process_video_capture(vid_path, api))
         self.run.start()
         stop = self.stop
