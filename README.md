@@ -42,8 +42,6 @@ pip install "setuptools<70"
 
 The `pyproject.toml` in this branch already pins `"setuptools>=61.0,<70"`, so a fresh `pip install -e .` should handle this automatically. It's worth knowing about in case you run into it anyway — for example, if another tool in your environment upgrades setuptools without you expecting it.
 
-> **On Apple Silicon and `jax-metal`:** The `metal` optional dependency exists in `pyproject.toml` but is currently broken — it crashes with `UNIMPLEMENTED: default_memory_space` at import time. The `.env` file forces `JAX_PLATFORMS=cpu` to bypass this. CPU JAX is fast enough for real-time RPPG on M-series chips, so this isn't really a limitation in practice.
-
 ***
 
 ## Getting Started
@@ -85,6 +83,8 @@ These show up on macOS but don't affect anything:
 | `pkg_resources is deprecated` | setuptools 69.x deprecation notice — harmless |
 | `AVFFrameReceiver implemented in both...` | `av` and `cv2` both bundle `libavdevice` on macOS — harmless for webcam use |
 | `Platform METAL is experimental` | `jax-metal` is installed but `JAX_PLATFORMS=cpu` overrides it — CPU is used as intended |
+
+> **On Apple Silicon and `jax-metal`:** The `metal` optional dependency exists in `pyproject.toml` but is currently broken — it crashes with `UNIMPLEMENTED: default_memory_space` at import time. The `.env` file forces `JAX_PLATFORMS=cpu` to bypass this. CPU JAX is fast enough for real-time RPPG on M-series chips, so this isn't really a limitation in practice.
 
 ***
 
