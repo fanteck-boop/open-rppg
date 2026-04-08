@@ -1,0 +1,58 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# PyTest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# JAX / XLA compilation cache
+.rppg_jitted/
+xla_extension/
+
+# Model weights (large binary files — track separately with Git LFS if needed)
+# *.h5
+# *.onnx
+# *.pkl
+
+# VS Code
+.vscode/settings.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Secrets / env vars
+.env
+*.env
