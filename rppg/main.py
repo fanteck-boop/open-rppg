@@ -173,7 +173,8 @@ class FaceDetector:
         options = ort.SessionOptions()
         options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         options.intra_op_num_threads = 1
-        self.session = ort.InferenceSession(model_path, options)
+        providers = ['CPUExecutionProvider']
+        self.session = ort.InferenceSession(model_path, options, providers=providers)
         self.input_name = self.session.get_inputs()[0].name
         self.output_names = [output.name for output in self.session.get_outputs()]
         
@@ -820,9 +821,9 @@ class Model:
         return self.hr()
             
     
-    def __process_video_capture(self, vid_path, api=None):
+    def __process_video_capture(self, vid_path, api=cv2.CAP_ANY):
         cap = cv2.VideoCapture(vid_path, api)
-        orientation = cap.get(cv2.CAP_PROP_ORIENTATION_META)
+        orientation = cap.get(getattr(cv2, 'CAP_PROP_ORIENTATION_META', -1))
         with self:
             while self.alive:
                 _, img = cap.read()
