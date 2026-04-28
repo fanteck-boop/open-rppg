@@ -10,7 +10,7 @@ UDP_PORT = 5005
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 model = rppg.Model()
 
-with model.video_capture(0):
+with model.video_capture(1):
     last_send = 0
 
     for frame, box in model.preview:
